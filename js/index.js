@@ -207,7 +207,8 @@ Ext.onReady(function(){
         },'-',{
             text:'Delete',
             handler:function(){
-                console.log();
+                let selections = grid.getSelectionModel().getSelections();
+                grid.getStore().remove(selections);
             }
         }],
         bbar: new Ext.PagingToolbar({
@@ -219,20 +220,12 @@ Ext.onReady(function(){
         }),
         view: new Ext.grid.GroupingView(),
         listeners:{
-            rowclick: function(grid, rowIndex){
-                operateRecord.selectRowIndex = rowIndex;
-                //grid.getSelectionModel().getSelected().phantom = false;
-                console.log(grid.getSelectionModel().getSelected());
-            },
             rowcontextmenu:function(grid, rowIndex, event){
                 event.preventDefault();
                 grid.getSelectionModel().selectRow(rowIndex);
                 contextMenu.showAt(event.getXY());
                 console.log(grid.getSelectionModel().getSelected())
-            }/*,
-            cellclick:function(){
-                console.log('select');
-            }*/
+            }
         }
     });
 
