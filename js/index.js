@@ -89,8 +89,16 @@ Ext.onReady(function(){
         ['李四','B','male',new Date(),'4'],
         ['王五','C','male',new Date(),'5']
     ]
-
+    let sm = new Ext.grid.CheckboxSelectionModel({
+        listeners:{
+            rowselect:function(){
+                console.log('selected');
+            }
+        }
+    });
     let cm = new Ext.grid.ColumnModel([
+        new Ext.grid.RowNumberer(),
+        sm,
         {
             header:'name',
             dataIndex:'name',
@@ -100,10 +108,39 @@ Ext.onReady(function(){
                 })
             )
         },
-        {header:'class',dataIndex:'className'},
-        {header:'sex',dataIndex:'sex'},
-        {header:'birthday',dataIndex:'birthday',renderer: Ext.util.Format.dateRenderer('Y/m/d')},
-        {header:'avatar',dataIndex:'avatar'}
+        {
+            header:'class',
+            dataIndex:'className',
+            editor: new Ext.grid.GridEditor(
+                new Ext.form.TextField({
+                    allowBlank: false
+                })
+            )},
+        {
+            header:'sex',
+            dataIndex:'sex',
+            editor: new Ext.grid.GridEditor(
+                new Ext.form.TextField({
+                    allowBlank: false
+                })
+        )},
+        {
+            header:'birthday',
+            dataIndex:'birthday',
+            renderer: Ext.util.Format.dateRenderer('Y/m/d'),
+            editor: new Ext.grid.GridEditor(
+                new Ext.form.TextField({
+                    allowBlank: false
+                })
+            )},
+        {
+            header:'avatar',
+            dataIndex:'avatar',
+            editor: new Ext.grid.GridEditor(
+                new Ext.form.TextField({
+                    allowBlank: false
+                })
+            )}
     ]);
 
     let groupingStore = new Ext.data.GroupingStore({
@@ -155,6 +192,7 @@ Ext.onReady(function(){
         height:500,
         store:groupingStore,
         cm:cm,
+        sm:sm,
         contextMenu:contextMenu,
         tbar:[{
             text:'add',
@@ -165,6 +203,11 @@ Ext.onReady(function(){
             text:'move',
             handler:function(){
                 console.log(operateRecord);
+            }
+        },'-',{
+            text:'Delete',
+            handler:function(){
+                console.log();
             }
         }],
         bbar: new Ext.PagingToolbar({
@@ -178,13 +221,18 @@ Ext.onReady(function(){
         listeners:{
             rowclick: function(grid, rowIndex){
                 operateRecord.selectRowIndex = rowIndex;
+                //grid.getSelectionModel().getSelected().phantom = false;
+                console.log(grid.getSelectionModel().getSelected());
             },
             rowcontextmenu:function(grid, rowIndex, event){
                 event.preventDefault();
                 grid.getSelectionModel().selectRow(rowIndex);
                 contextMenu.showAt(event.getXY());
                 console.log(grid.getSelectionModel().getSelected())
-            }
+            }/*,
+            cellclick:function(){
+                console.log('select');
+            }*/
         }
     });
 
