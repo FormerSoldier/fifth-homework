@@ -83,19 +83,23 @@ Ext.onReady(function(){
     });
 
     let data = [
-        ['刘一','A','male',new Date(),'1'],
-        ['陈二','A','female',new Date(),'2'],
-        ['张三','B','male',new Date(),'3'],
-        ['李四','B','male',new Date(),'4'],
-        ['王五','C','male',new Date(),'5']
+        ['刘一','A','male',new Date()],
+        ['陈二','A','female',new Date()],
+        ['张三','A','female',new Date()],
+        ['李四','B','male',new Date()],
+        ['王五','B','male',new Date()],
+        ['赵六','C','male',new Date()]
     ]
-    let sm = new Ext.grid.CheckboxSelectionModel({
-        listeners:{
-            rowselect:function(){
-                console.log('selected');
-            }
-        }
-    });
+
+    let addAvadar = (content,record,c)=>{
+        if(c.data.sex == 'female')
+            record.style += 'color:green;background:url(./pic/gril.png) no-repeat 28px 1px';
+        else
+            record.style += 'color:red;background:url(./pic/boy.png) no-repeat 28px 1px;';
+        return content;
+    };
+
+    let sm = new Ext.grid.CheckboxSelectionModel();
     let cm = new Ext.grid.ColumnModel([
         new Ext.grid.RowNumberer(),
         sm,
@@ -136,11 +140,7 @@ Ext.onReady(function(){
         {
             header:'avatar',
             dataIndex:'avatar',
-            editor: new Ext.grid.GridEditor(
-                new Ext.form.TextField({
-                    allowBlank: false
-                })
-            )}
+            renderer:addAvadar}
     ]);
 
     let groupingStore = new Ext.data.GroupingStore({
@@ -153,35 +153,96 @@ Ext.onReady(function(){
             {name:'avatar'}
         ]),
         groupField:'className',
-        sortInfo: {field:'className',field:'name',direction:'DESC'}
+        multiSortInfo: {sorters:[{field:'className',direction:'DESC'},{field:'name',direction:'DESC'}]}
     });
     
     groupingStore.load({params:{start:0,limit:4}});
+
+
+    let moveRecord = (record, moveIndex)=>{
+
+    }
 
     let contextMenu = new Ext.menu.Menu({
         items:[
             {
                 text:'Up',
                 handler:function(){
-
+                    let store = grid.getStore();
+                    let curSelection = grid.getSelectionModel().getSelected();
+                    let curIndex = store.indexOf(curSelection);
+                    let className = curSelection.data.className;      
+                    
+                    let lastSelection;
+                    let startIndex = -1;
+                    while(true){
+                        startIndex = store.find('className',className,startIndex+1);
+                        console.log(startIndex);
+                        if(curIndex > startIndex)
+                            lastSelection = store.getAt(startIndex);
+                        else
+                            break;
+                    };
+                    if(lastSelection != null && lastSelection != curSelection){
+                        let insertIndex = store.indexOf(lastSelection);
+                        store.remove(curSelection);
+                        store.insert(insertIndex,curSelection);
+                    }
                 }
             },
             {
                 text:'Down',
                 handler:function(){
+                    let store = grid.getStore();
+                    let curSelection = grid.getSelectionModel().getSelected();
+                    let curIndex = store.indexOf(curSelection);
+                    let className = curSelection.data.className;      
                     
+                    let lastIndex = store.find('className',className,curIndex + 1);
+                    let lastSelection = store.getAt(lastIndex);
+                    if(lastSelection != null && lastSelection != curSelection){
+                        store.remove(lastSelection);
+                        store.insert(curIndex,lastSelection);
+                    }
                 }
             },
             {
                 text:'First',
                 handler:function(){
+                    let store = grid.getStore();
+                    let curSelection = grid.getSelectionModel().getSelected();
+                    let className = curSelection.data.className;      
                     
+                    let fistIndex = store.find('className',className);
+                    let firstSelection = store.getAt(fistIndex);
+                    if(firstSelection != null && firstSelection != curSelection){
+                        store.remove(curSelection);
+                        store.insert(fistIndex,curSelection);
+                    }
                 }
             },
             {
                 text:'Last',
                 handler:function(){
+                    let store = grid.getStore();
+                    let curSelection = grid.getSelectionModel().getSelected();
+                    let curIndex = store.indexOf(curSelection);
+                    let className = curSelection.data.className;      
                     
+                    let endSelection;
+                    let matchIndex=curIndex;
+                    while(true){
+                        matchIndex = store.find('className',className,matchIndex+1);
+                        if(matchIndex != -1)
+                            endSelection = store.getAt(matchIndex);
+                        else
+                            break;
+                    };
+                    if(endSelection != null){
+                        let insertIndex = store.indexOf(endSelection);
+                        store.remove(curSelection);
+                        store.insert(insertIndex+1,curSelection);
+                    }
                 }
             }
         ]
@@ -202,7 +263,8 @@ Ext.onReady(function(){
         },'-',{
             text:'move',
             handler:function(){
-                console.log(operateRecord);
+                //console.log(operateRecord);
+                console.log(grid.getStore());
             }
         },'-',{
             text:'Delete',
@@ -224,7 +286,6 @@ Ext.onReady(function(){
                 event.preventDefault();
                 grid.getSelectionModel().selectRow(rowIndex);
                 contextMenu.showAt(event.getXY());
-                console.log(grid.getSelectionModel().getSelected())
             }
         }
     });
