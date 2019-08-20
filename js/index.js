@@ -1,6 +1,5 @@
 Ext.onReady(function(){
 
-    var operateRecord = {};
     let window = new Ext.Window({
         id:'window',
         title:'请输入信息',
@@ -12,16 +11,19 @@ Ext.onReady(function(){
         labelAlign:'right',
         items:[
             {
+                id:'name',
                 fieldLabel:'name',
                 xtype:'textfield',
                 emptyText:'请输入name'
             },
             {
+                id:'className',
                 fieldLabel:'className',
                 xtype:'textfield',
                 emptyText:'请输入className'
             },
             {
+                id:'sex',
                 fieldLabel:'sex',
                 xtype:'textfield',
                 emptyText:'请输入sex'
@@ -31,11 +33,6 @@ Ext.onReady(function(){
                 xtype:'datefield',
                 format:'Y/m/d',
                 emptyText:'请输入birthday'
-            },
-            {
-                fieldLabel:'avatar',
-                xtype:'textfield',
-                emptyText:'请输入avatar'
             }
         ],
         buttons:[
@@ -47,20 +44,29 @@ Ext.onReady(function(){
                     let className = inputValue[1].getValue();
                     let sex = inputValue[2].getValue();
                     let birthday = inputValue[3].getValue();
-                    let avatar = inputValue[4].getValue();
 
                     let record = new Ext.data.Record({
                         name:name,
                         className: className,
                         sex:sex,
-                        birthday:birthday,
-                        avatar:avatar                      
+                        birthday:birthday                     
                     });
 
-                    if(operateRecord.selectRowIndex == undefined || operateRecord.selectRowIndex == null)
+                    let selectedRecord = grid.getSelectionModel().getSelected();
+                    let recordIndex = grid.getStore().indexOf(selectedRecord);
+                    if(recordIndex == -1){
+                        console.log('if里面'+recordIndex);
                         groupingStore.insert(0,record);
-                    else
-                        groupingStore.insert(operateRecord.selectRowIndex,record);
+                    }
+                        
+                    else{
+                        console.log('else里面'+recordIndex);
+                        let className = selectedRecord.data.className;
+                        record.className = className;
+                        inputValue[1].setValue(className);
+                        groupingStore.insert(recordIndex,record);
+                    }
+                        
 
                     for(let i = 0; i < inputValue.length; i++)
                         inputValue[i].setValue('');
@@ -153,15 +159,10 @@ Ext.onReady(function(){
             {name:'avatar'}
         ]),
         groupField:'className',
-        multiSortInfo: {sorters:[{field:'className',direction:'DESC'},{field:'name',direction:'DESC'}]}
+        multiSortInfo: {sorters:[{field:'className',direction:'DESC'},{field:'name',direction:'DESC'}],direction:'DESC'}
     });
     
     groupingStore.load({params:{start:0,limit:4}});
-
-
-    let moveRecord = (record, moveIndex)=>{
-
-    }
 
     let contextMenu = new Ext.menu.Menu({
         items:[
@@ -177,7 +178,6 @@ Ext.onReady(function(){
                     let startIndex = -1;
                     while(true){
                         startIndex = store.find('className',className,startIndex+1);
-                        console.log(startIndex);
                         if(curIndex > startIndex)
                             lastSelection = store.getAt(startIndex);
                         else
@@ -258,19 +258,23 @@ Ext.onReady(function(){
         tbar:[{
             text:'add',
             handler:function(){
+                let record = grid.getSelectionModel().getSelected();
+                if(record != undefined){
+                    Ext.getCmp('className').setValue(record.data.className);
+                    console.log(record.data.className);
+
+                }        
                 window.show();
-            }
-        },'-',{
-            text:'move',
-            handler:function(){
-                //console.log(operateRecord);
-                console.log(grid.getStore());
             }
         },'-',{
             text:'Delete',
             handler:function(){
-                let selections = grid.getSelectionModel().getSelections();
-                grid.getStore().remove(selections);
+                Ext.Msg.confirm('温馨提示','你确定要删除吗?',function(btn){
+                    if(btn =='yes'){
+                        let selections = grid.getSelectionModel().getSelections();
+                        grid.getStore().remove(selections);
+                    }
+                });     
             }
         }],
         bbar: new Ext.PagingToolbar({
@@ -284,7 +288,7 @@ Ext.onReady(function(){
         listeners:{
             rowcontextmenu:function(grid, rowIndex, event){
                 event.preventDefault();
-                grid.getSelectionModel().selectRow(rowIndex);
+                grid.getSelectionModel().selectRow(rowIndex);          
                 contextMenu.showAt(event.getXY());
             }
         }
