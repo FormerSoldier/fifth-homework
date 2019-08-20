@@ -119,7 +119,7 @@ Ext.onReady(function(){
         sortInfo: {field:'className',field:'name',direction:'DESC'}
     });
     
-    groupingStore.load();
+    groupingStore.load({params:{start:0,limit:4}});
 
     let contextMenu = new Ext.menu.Menu({
         items:[
@@ -167,6 +167,13 @@ Ext.onReady(function(){
                 console.log(operateRecord);
             }
         }],
+        bbar: new Ext.PagingToolbar({
+            pageSize: 4,
+            store: groupingStore,
+            displayInfo: true,
+            displayMsg: '显示第{0}条 到{1}条记录，一共{2}条',
+            emptyMsg: '没有记录'
+        }),
         view: new Ext.grid.GroupingView(),
         listeners:{
             rowclick: function(grid, rowIndex){
