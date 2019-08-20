@@ -109,29 +109,37 @@ Ext.onReady(function(){
         {header:'avatar',dataIndex:'avatar'}
     ]);
 
-    let store = new Ext.data.Store({
+    let groupingStore = new Ext.data.GroupingStore({
         proxy: new Ext.data.PagingMemoryProxy(data),
         reader: new Ext.data.ArrayReader({},[
             {name:'name'},
-            {name:'className'},
+            {name:'className',sortable:true},
             {name:'sex'},
             {name:'birthday'},
             {name:'avatar'}
-        ])
+        ]),
+        groupField:'className',
+        sortInfo: {field:'className',field:'name',direction:'DESC'}
     });
     
-    store.load();
+    groupingStore.load();
+
+    
 
     let grid = new Ext.grid.GridPanel({
         renderTo:'test',
         height:500,
-        store:store,
+        store:groupingStore,
         cm:cm,
         tbar:[{text:'总菜单',menu:menu}],
+        view: new Ext.grid.GroupingView(),
         listeners:{
             rowclick: function(grid, rowIndex){
                 operateRecord.selectRowIndex = rowIndex;
             }
         }
     });
+
+    
+
 })
